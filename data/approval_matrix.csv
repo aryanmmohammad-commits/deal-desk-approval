@@ -1,0 +1,6 @@
+rule_id,field,operator,threshold,approver_role,reason_text,matrix_version
+R-01,discount_pct,>,20,Finance,Discount exceeds 20 percent.,1
+R-02,discount_pct,>,35,Finance VP,Discount exceeds 35 percent.,1
+R-03,payment_terms_days,>,60,Finance,Payment terms exceed 60 days.,1
+R-04,term_months,<,12,Pricing,Contract term is shorter than 12 months.,1
+R-05,special_terms,is_not_empty,,Legal,Non-standard contract terms requested.,1

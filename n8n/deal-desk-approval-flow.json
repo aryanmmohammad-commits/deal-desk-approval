@@ -1,0 +1,192 @@
+{
+  "name": "Deal Desk – approval flow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "quote-submitted",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "48f03b2d-21c0-420b-a5a1-c4ef0e2f7dbb",
+      "name": "Webhook",
+      "webhookId": "bf0ee78d-b4e0-41d0-b2e8-3a185fdda0c9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/evaluate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "1aebc043-0c24-40e1-8bf7-f32e97f13df2",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c5c94438-5344-4479-bbd2-3876544d3ea5",
+              "leftValue": "={{ $json.duplicate }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "57f3d6c4-9c4e-428c-91ff-152d12951d0f",
+              "leftValue": "={{ $json.tier }}",
+              "rightValue": "auto_approve",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "682d6b52-07c6-4a6b-b0cf-366b05cf40d1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C93J1LV3J",
+          "mode": "id"
+        },
+        "message": "=Deal {{ $json.deal_id }} (v{{ $json.quote_version }}) needs approval\nApprovers: {{ $json.approvers.join(', ') }}\nReasons: {{ $json.reasons.join(' | ') }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "46a155d3-5006-41be-a43a-5973a3864aa1",
+      "name": "Send message and wait for response",
+      "webhookId": "1a902933-1349-4582-93fc-f0d07f1b3e5e",
+      "credentials": {
+        "slackApi": {
+          "id": "nMhO4nzN3kARSnO4",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/decision",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ deal_id: $('HTTP Request').item.json.deal_id, quote_version: $('HTTP Request').item.json.quote_version, approved: $json.data.approved }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "621fd1aa-8bf1-4a1d-94f9-29d211bc83dd",
+      "name": "HTTP Request1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4c4038be-be15-4464-955c-a7211f52e053",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "37a9866921899802c4191675de1ddd2b814eabdcd7acf7675dbdfa6133907ff0"
+  },
+  "nodeGroups": [],
+  "id": "5kbozxCiNP26VdYc",
+  "tags": []
+}
