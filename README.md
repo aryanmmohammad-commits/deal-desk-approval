@@ -27,6 +27,16 @@ Seller / CRM ──► n8n Webhook ──► FastAPI /evaluate ──► Airtabl
 | Logbook | State, duplicates, timestamps | SQLite (PostgreSQL-ready) |
 | Messenger | Asks approvers, collects the click | Slack |
 
+## See it working
+
+**Slack approval request.** Only quotes that break a rule reach a human:
+
+![Slack approval request](docs/images/slack-approval.png)
+
+**The rulebook in Airtable.** Deal Ops edits thresholds without touching code:
+
+![Approval rules in Airtable](docs/images/airtable-rules.png)
+
 ## Design decisions
 - **Rules live outside the code** (Airtable), so Deal Ops can change a threshold without an engineer.
 - **One place decides** (FastAPI). n8n only carries and waits.
